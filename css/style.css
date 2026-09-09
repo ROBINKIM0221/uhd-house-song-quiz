@@ -50,15 +50,6 @@ body {
   width: auto;
 }
 
-/* 재생 화면용. 가운데 정렬된 본문을 밀어내지 않도록 띄워서 얹는다. */
-.emblem-small {
-  position: absolute;
-  top: var(--gap);
-  left: var(--gap);
-  height: clamp(24px, 4.5vmin, 44px);
-  opacity: 0.85;
-}
-
 /* 대기 화면 */
 .logo {
   margin: 0;
