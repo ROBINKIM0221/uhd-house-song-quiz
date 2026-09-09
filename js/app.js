@@ -38,6 +38,7 @@ const dom = {
     quiz: el('screen-quiz'),
     result: el('screen-result'),
   },
+  hint: el('hint'),
   btnStart: el('btn-start'),
   btnNext: el('btn-next'),
   choices: el('choices'),
@@ -80,6 +81,13 @@ function later(fn, ms) {
   const id = setTimeout(fn, ms);
   state.timers.push(id);
   return id;
+}
+
+/** 안내 문구의 초를 설정값과 맞춘다. 스태프가 재생 길이를 10초로 줄이면
+    문구도 10초라고 말해야 한다. */
+function renderHint() {
+  dom.hint.textContent =
+    `응원가를 듣고 ${state.settings.playSeconds}초가 끝나기 전에 어떤 곡인지 맞혀보세요!`;
 }
 
 function showScreen(name) {
@@ -237,6 +245,7 @@ function closeSettings() {
 dom.settingPlay.addEventListener('input', () => {
   state.settings.playSeconds = Number(dom.settingPlay.value);
   dom.settingPlayValue.textContent = dom.settingPlay.value;
+  renderHint();
   saveSettings(state.settings);
 });
 
@@ -306,6 +315,7 @@ requestWakeLock();
 dom.btnStart.addEventListener('click', startQuestion);
 dom.btnNext.addEventListener('click', goIdle);
 
+renderHint();
 goIdle();
 
 // --- 오프라인 캐시 ----------------------------------------------------
