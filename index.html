@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#10265E">
+  <meta name="theme-color" content="#004098">
   <title>UHD 하우스에서 들려온 노래</title>
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="stylesheet" href="css/style.css">
@@ -11,6 +11,7 @@
 <body>
   <!-- 대기 -->
   <section class="screen" id="screen-idle">
+    <img class="emblem" src="img/emblem.png" alt="울산 HD FC" width="492" height="640">
     <h1 class="logo" id="logo">UHD 하우스에서<br>들려온 노래</h1>
     <p class="tagline">울산의 멜로디를 찾아라!</p>
     <button class="btn-primary" id="btn-start" type="button">시작하기</button>
@@ -19,6 +20,7 @@
 
   <!-- 재생 + 응답 -->
   <section class="screen" id="screen-quiz" hidden>
+    <img class="emblem-small" src="img/emblem.png" alt="" width="492" height="640">
     <div class="quiz-head">
       <div class="wave" aria-hidden="true">
         <span></span><span></span><span></span><span></span><span></span>

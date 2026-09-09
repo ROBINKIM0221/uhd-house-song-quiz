@@ -1,11 +1,15 @@
-/* 울산 HD FC 브랜드 컬러. 공식 코드가 따로 있으면 여기만 고치면 된다. */
+/* 울산 HD FC 브랜드 컬러.
+   --navy는 구단 엠블럼에서 그대로 뽑은 공식 블루다. 엠블럼 방패 안쪽과
+   같은 색이라 엠블럼이 배경에 녹아들어 흰 선만 남는다. */
 :root {
-  --navy: #10265E;
-  --navy-deep: #0A1A42;
+  --navy: #004098;
+  --navy-deep: #002B6B;
   --gold: #FFC72C;
   --white: #FFFFFF;
-  --muted: #8C9BC4;
-  --wrong: #4A5B8C;
+  /* 배경 대비 5.8:1. 이전 값(#8C9BC4)은 2.5:1이라 야외에서 안 읽혔다. */
+  --muted: #B9CBE8;
+  /* 오답 판정 글씨. 골드(정답)와 구분되면서 배경 대비 7.5:1을 지킨다. */
+  --wrong: #DCE6F5;
   --gap: clamp(12px, 2.5vmin, 24px);
 }
 
@@ -39,6 +43,21 @@ body {
 }
 
 .screen[hidden] { display: none; }
+
+/* 엠블럼 */
+.emblem {
+  height: clamp(72px, 16vmin, 168px);
+  width: auto;
+}
+
+/* 재생 화면용. 가운데 정렬된 본문을 밀어내지 않도록 띄워서 얹는다. */
+.emblem-small {
+  position: absolute;
+  top: var(--gap);
+  left: var(--gap);
+  height: clamp(24px, 4.5vmin, 44px);
+  opacity: 0.85;
+}
 
 /* 대기 화면 */
 .logo {
@@ -230,7 +249,7 @@ body {
   align-items: center;
   justify-content: center;
   padding: var(--gap);
-  background: rgba(10, 26, 66, 0.9);
+  background: rgba(0, 30, 74, 0.92);
 }
 
 .overlay[hidden] { display: none; }
