@@ -93,6 +93,18 @@ export function createPlayer() {
     async probe(files) {
       return Promise.all(
         files.map(async (file) => {
+          // 캐시를 먼저 본다. 오프라인에서는 네트워크 요청이 실패하는데,
+          // 캐시에 있으면 실제로 그 파일이 재생되므로 '정상'이 맞다.
+          // 네트워크만 보면 경기장에서 5곡 전부 '없음'이라고 거짓말한다.
+          try {
+            if ('caches' in window) {
+              const hit = await caches.match(file);
+              if (hit) return { file, ok: true };
+            }
+          } catch {
+            // 캐시를 못 열었다. 네트워크로 확인한다.
+          }
+
           try {
             const response = await fetch(file, { method: 'HEAD' });
             return { file, ok: response.ok };
