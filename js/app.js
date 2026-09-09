@@ -322,8 +322,10 @@ goIdle();
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
+    // updateViaCache: 'none' 이 없으면 GitHub Pages가 sw.js에 붙이는
+    // max-age=600 탓에 브라우저가 10분 동안 새 워커를 받아오지 않는다.
     // 등록에 실패해도 온라인이면 정상 동작한다. 콘솔에만 남긴다.
-    navigator.serviceWorker.register('sw.js').catch((error) => {
+    navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch((error) => {
       console.warn('서비스워커 등록 실패:', error);
     });
   });
