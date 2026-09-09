@@ -4,6 +4,31 @@ import { createPlayer } from './audio.js';
 
 const DEFAULTS = { playSeconds: 15, answerSeconds: 5 };
 const RESULT_AUTO_RESET_MS = 12000;
+const STORAGE_KEY = 'uhd-quiz-settings';
+const LONG_PRESS_MS = 2000;
+
+/** localStorage를 못 쓰는 환경(사파리 프라이빗 등)에서도 기본값으로 돈다. */
+function loadSettings() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return { ...DEFAULTS };
+    const saved = JSON.parse(raw);
+    return {
+      playSeconds: Number(saved.playSeconds) || DEFAULTS.playSeconds,
+      answerSeconds: Number(saved.answerSeconds) || DEFAULTS.answerSeconds,
+    };
+  } catch {
+    return { ...DEFAULTS };
+  }
+}
+
+function saveSettings(settings) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings));
+  } catch {
+    // 저장 못 해도 이번 세션 동안은 메모리 값으로 동작한다.
+  }
+}
 
 const el = (id) => document.getElementById(id);
 
@@ -23,12 +48,21 @@ const dom = {
   resultVerdict: el('result-verdict'),
   resultPoints: el('result-points'),
   resultSong: el('result-song'),
+  logo: el('logo'),
+  overlay: el('overlay-settings'),
+  settingPlay: el('setting-play'),
+  settingPlayValue: el('setting-play-value'),
+  settingAnswer: el('setting-answer'),
+  settingAnswerValue: el('setting-answer-value'),
+  audioStatus: el('setting-audio-status'),
+  btnRefreshCache: el('btn-refresh-cache'),
+  btnCloseSettings: el('btn-close-settings'),
 };
 
 const player = createPlayer();
 
 const state = {
-  settings: { ...DEFAULTS },
+  settings: loadSettings(),
   deck: [],
   lastSongId: null,
   currentSong: null,
@@ -166,6 +200,106 @@ function finish(selectedId) {
   // 참가자가 그냥 자리를 떠도 다음 사람이 바로 시작할 수 있어야 한다.
   later(goIdle, RESULT_AUTO_RESET_MS);
 }
+
+// --- 설정 오버레이 ----------------------------------------------------
+
+async function renderAudioStatus() {
+  dom.audioStatus.replaceChildren();
+  const results = await player.probe(SONGS.map((s) => s.file));
+  for (const [index, entry] of results.entries()) {
+    const li = document.createElement('li');
+    const name = document.createElement('span');
+    name.textContent = SONGS[index].title;
+    const mark = document.createElement('span');
+    mark.className = entry.ok ? 'ok' : 'missing';
+    mark.textContent = entry.ok ? '정상' : '없음 (데모음)';
+    li.append(name, mark);
+    dom.audioStatus.append(li);
+  }
+}
+
+function openSettings() {
+  clearTimers();
+  player.stop();
+  dom.settingPlay.value = String(state.settings.playSeconds);
+  dom.settingPlayValue.textContent = String(state.settings.playSeconds);
+  dom.settingAnswer.value = String(state.settings.answerSeconds);
+  dom.settingAnswerValue.textContent = String(state.settings.answerSeconds);
+  dom.overlay.hidden = false;
+  renderAudioStatus();
+}
+
+function closeSettings() {
+  dom.overlay.hidden = true;
+  goIdle();
+}
+
+dom.settingPlay.addEventListener('input', () => {
+  state.settings.playSeconds = Number(dom.settingPlay.value);
+  dom.settingPlayValue.textContent = dom.settingPlay.value;
+  saveSettings(state.settings);
+});
+
+dom.settingAnswer.addEventListener('input', () => {
+  state.settings.answerSeconds = Number(dom.settingAnswer.value);
+  dom.settingAnswerValue.textContent = dom.settingAnswer.value;
+  saveSettings(state.settings);
+});
+
+dom.btnCloseSettings.addEventListener('click', closeSettings);
+
+dom.btnRefreshCache.addEventListener('click', async () => {
+  try {
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((key) => caches.delete(key)));
+    }
+    const registrations = await navigator.serviceWorker?.getRegistrations?.();
+    await Promise.all((registrations ?? []).map((r) => r.unregister()));
+  } catch {
+    // 캐시를 못 비워도 새로고침은 시도한다.
+  }
+  location.reload();
+});
+
+// 로고를 2초 길게 누르면 열린다. 참가자가 우연히 들어가지 못하게.
+let pressTimer = null;
+
+function startPress() {
+  pressTimer = setTimeout(openSettings, LONG_PRESS_MS);
+}
+
+function cancelPress() {
+  if (pressTimer) clearTimeout(pressTimer);
+  pressTimer = null;
+}
+
+dom.logo.addEventListener('pointerdown', startPress);
+dom.logo.addEventListener('pointerup', cancelPress);
+dom.logo.addEventListener('pointerleave', cancelPress);
+dom.logo.addEventListener('pointercancel', cancelPress);
+// 길게 누를 때 뜨는 iOS 텍스트 선택/확대 메뉴를 막는다.
+dom.logo.addEventListener('contextmenu', (event) => event.preventDefault());
+
+// --- 화면 꺼짐 방지 ---------------------------------------------------
+
+let wakeLock = null;
+
+async function requestWakeLock() {
+  try {
+    if (!('wakeLock' in navigator)) return;
+    wakeLock = await navigator.wakeLock.request('screen');
+  } catch {
+    // 지원하지 않거나 거부됨. 무시하고 진행한다.
+  }
+}
+
+// 다른 앱에 갔다 돌아오면 잠금이 풀려 있으므로 다시 건다.
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') requestWakeLock();
+});
+
+requestWakeLock();
 
 // --- 연결 -------------------------------------------------------------
 
