@@ -1,0 +1,10 @@
+{
+  "name": "uhd-house-song-quiz",
+  "version": "1.0.0",
+  "description": "울산 HD FC 프렌즈 장외 부스 - UHD 하우스에서 들려온 노래",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "test": "node --test test/"
+  }
+}
