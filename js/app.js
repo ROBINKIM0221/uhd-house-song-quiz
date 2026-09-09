@@ -307,3 +307,14 @@ dom.btnStart.addEventListener('click', startQuestion);
 dom.btnNext.addEventListener('click', goIdle);
 
 goIdle();
+
+// --- 오프라인 캐시 ----------------------------------------------------
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    // 등록에 실패해도 온라인이면 정상 동작한다. 콘솔에만 남긴다.
+    navigator.serviceWorker.register('sw.js').catch((error) => {
+      console.warn('서비스워커 등록 실패:', error);
+    });
+  });
+}

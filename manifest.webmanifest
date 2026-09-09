@@ -1,0 +1,14 @@
+{
+  "name": "UHD 하우스에서 들려온 노래",
+  "short_name": "UHD 하우스",
+  "description": "울산 HD FC 프렌즈 장외 부스 음악 퀴즈",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "orientation": "any",
+  "background_color": "#10265E",
+  "theme_color": "#10265E",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
