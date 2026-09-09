@@ -26,3 +26,26 @@ export function createDeck(songs, previousSongId = null, rand = Math.random) {
   }
   return deck;
 }
+
+// 기획안: 정답 승점 3점, 오답 승점 1점.
+export const POINTS_CORRECT = 3;
+export const POINTS_WRONG = 1;
+
+/** 보기는 항상 5곡 전체. 순서만 매번 섞는다. */
+export function createChoices(songs, rand = Math.random) {
+  return shuffle(songs, rand);
+}
+
+/**
+ * 채점한다. selectedId가 null이면 시간 초과(무응답)이고,
+ * 기획안에 따라 오답과 같은 1점을 준다.
+ */
+export function score(answerId, selectedId) {
+  const timedOut = selectedId === null;
+  const correct = !timedOut && selectedId === answerId;
+  return {
+    correct,
+    points: correct ? POINTS_CORRECT : POINTS_WRONG,
+    timedOut,
+  };
+}

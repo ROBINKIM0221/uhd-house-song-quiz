@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { SONGS } from '../js/songs.js';
-import { shuffle, createDeck } from '../js/quiz.js';
+import { shuffle, createDeck, createChoices, score, POINTS_CORRECT, POINTS_WRONG } from '../js/quiz.js';
 
 // 미리 정한 값을 순서대로 뱉는 가짜 난수. 값이 떨어지면 처음으로 돌아간다.
 function fakeRandom(values) {
@@ -41,4 +41,33 @@ test('새 덱의 첫 곡은 직전 곡과 같지 않다', () => {
 test('직전 곡이 없으면 아무 곡이나 첫 곡이 될 수 있다', () => {
   const deck = createDeck(SONGS, null, fakeRandom([0.5]));
   assert.equal(deck.length, 5);
+});
+
+test('보기는 항상 5곡 전체를 담는다', () => {
+  const choices = createChoices(SONGS, fakeRandom([0.4, 0.9, 0.2]));
+  assert.equal(choices.length, 5);
+  assert.deepEqual(choices.map((s) => s.id).sort(), [1, 2, 3, 4, 5]);
+});
+
+test('보기는 원본 배열을 바꾸지 않는다', () => {
+  const before = SONGS.map((s) => s.id);
+  createChoices(SONGS, fakeRandom([0.6, 0.1]));
+  assert.deepEqual(SONGS.map((s) => s.id), before);
+});
+
+test('정답을 고르면 3점이다', () => {
+  assert.deepEqual(score(3, 3), { correct: true, points: 3, timedOut: false });
+});
+
+test('오답을 고르면 1점이다', () => {
+  assert.deepEqual(score(3, 5), { correct: false, points: 1, timedOut: false });
+});
+
+test('아무것도 안 고르면 오답으로 1점이다', () => {
+  assert.deepEqual(score(3, null), { correct: false, points: 1, timedOut: true });
+});
+
+test('승점 상수는 기획안과 같다', () => {
+  assert.equal(POINTS_CORRECT, 3);
+  assert.equal(POINTS_WRONG, 1);
 });
