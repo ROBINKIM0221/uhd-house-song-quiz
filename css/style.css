@@ -1,0 +1,289 @@
+/* 울산 HD FC 브랜드 컬러. 공식 코드가 따로 있으면 여기만 고치면 된다. */
+:root {
+  --navy: #10265E;
+  --navy-deep: #0A1A42;
+  --gold: #FFC72C;
+  --white: #FFFFFF;
+  --muted: #8C9BC4;
+  --wrong: #4A5B8C;
+  --gap: clamp(12px, 2.5vmin, 24px);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  margin: 0;
+}
+
+body {
+  background: var(--navy);
+  color: var(--white);
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  overflow: hidden;
+}
+
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--gap);
+  padding: var(--gap);
+  text-align: center;
+}
+
+.screen[hidden] { display: none; }
+
+/* 대기 화면 */
+.logo {
+  margin: 0;
+  font-size: clamp(32px, 7vmin, 72px);
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+}
+
+.tagline {
+  margin: 0;
+  color: var(--gold);
+  font-size: clamp(18px, 3.5vmin, 34px);
+  font-weight: 700;
+}
+
+.hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(13px, 2vmin, 20px);
+}
+
+.btn-primary {
+  min-height: 72px;
+  padding: 0 clamp(32px, 6vmin, 72px);
+  border: 0;
+  border-radius: 999px;
+  background: var(--gold);
+  color: var(--navy-deep);
+  font-family: inherit;
+  font-size: clamp(20px, 3.5vmin, 32px);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.btn-primary:active { transform: scale(0.97); }
+
+.btn-secondary {
+  min-height: 56px;
+  padding: 0 24px;
+  border: 2px solid var(--muted);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--white);
+  font-family: inherit;
+  font-size: clamp(15px, 2.2vmin, 20px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+/* 재생 화면 */
+.quiz-head {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.wave {
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  height: clamp(40px, 8vmin, 88px);
+}
+
+.wave span {
+  width: clamp(6px, 1.2vmin, 12px);
+  border-radius: 999px;
+  background: var(--gold);
+  animation: bounce 0.9s ease-in-out infinite;
+}
+
+.wave span:nth-child(1) { height: 40%; animation-delay: 0s; }
+.wave span:nth-child(2) { height: 75%; animation-delay: 0.15s; }
+.wave span:nth-child(3) { height: 100%; animation-delay: 0.3s; }
+.wave span:nth-child(4) { height: 65%; animation-delay: 0.45s; }
+.wave span:nth-child(5) { height: 35%; animation-delay: 0.6s; }
+
+@keyframes bounce {
+  0%, 100% { transform: scaleY(0.4); }
+  50% { transform: scaleY(1); }
+}
+
+/* 애니메이션을 줄이도록 설정한 기기에서는 멈춘다 */
+@media (prefers-reduced-motion: reduce) {
+  .wave span { animation: none; }
+}
+
+.timer {
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(15px, 2.4vmin, 24px);
+  font-weight: 700;
+}
+
+.timer-answer {
+  color: var(--gold);
+  font-size: clamp(48px, 12vmin, 140px);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.timer[hidden], .badge[hidden] { display: none; }
+
+.badge {
+  margin: 0;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--muted);
+  font-size: clamp(11px, 1.6vmin, 15px);
+  font-weight: 700;
+}
+
+.badge-warn {
+  background: var(--gold);
+  color: var(--navy-deep);
+}
+
+/* 보기 */
+.choices {
+  display: grid;
+  gap: clamp(8px, 1.6vmin, 16px);
+  width: min(100%, 1100px);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.choice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 64px;
+  padding: 12px 20px;
+  border: 3px solid rgba(255, 255, 255, 0.25);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--white);
+  font-family: inherit;
+  font-size: clamp(17px, 2.8vmin, 30px);
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.choice:active {
+  border-color: var(--gold);
+  background: rgba(255, 199, 44, 0.2);
+}
+
+/* 세로: 1열, 가로: 2열 */
+@media (orientation: landscape) {
+  .choices { grid-template-columns: 1fr 1fr; }
+  /* 5개 중 마지막 하나는 두 칸을 차지해 가운데로 온다 */
+  .choices li:nth-child(5) { grid-column: 1 / -1; }
+}
+
+/* 결과 화면 */
+.verdict {
+  margin: 0;
+  font-size: clamp(40px, 9vmin, 96px);
+  font-weight: 800;
+}
+
+.verdict.correct { color: var(--gold); }
+.verdict.wrong { color: var(--wrong); }
+
+.points {
+  margin: 0;
+  font-size: clamp(24px, 5vmin, 56px);
+  font-weight: 800;
+}
+
+.answer-song {
+  margin: 0;
+  color: var(--muted);
+  font-size: clamp(15px, 2.6vmin, 26px);
+  font-weight: 700;
+}
+
+/* 설정 오버레이 */
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--gap);
+  background: rgba(10, 26, 66, 0.9);
+}
+
+.overlay[hidden] { display: none; }
+
+.panel {
+  width: min(100%, 560px);
+  max-height: 100%;
+  padding: 24px;
+  overflow-y: auto;
+  border: 2px solid var(--muted);
+  border-radius: 20px;
+  background: var(--navy-deep);
+  text-align: left;
+}
+
+.panel h2 { margin: 0 0 16px; font-size: 24px; }
+.panel h3 { margin: 20px 0 8px; font-size: 17px; color: var(--muted); }
+
+.field {
+  display: block;
+  margin-bottom: 16px;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.field input[type="range"] {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  accent-color: var(--gold);
+}
+
+.audio-status {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+}
+
+.audio-status li {
+  display: flex;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.audio-status .ok { color: var(--gold); }
+.audio-status .missing { color: var(--muted); }
+
+.panel-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.panel-actions button { flex: 1; }
