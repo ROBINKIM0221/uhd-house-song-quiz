@@ -20,8 +20,8 @@ test('기획안의 곡명을 순서대로 담는다', () => {
   ]);
 });
 
-test('음원 경로는 audio/ 아래의 로마자 mp3다', () => {
+test('음원 경로는 audio/ 아래의 로마자 m4a다', () => {
   for (const song of SONGS) {
-    assert.match(song.file, /^audio\/0[1-5]-[a-z]+\.mp3$/);
+    assert.match(song.file, /^audio\/0[1-5]-[a-z]+\.m4a$/);
   }
 });

@@ -7,7 +7,7 @@
 // 새 워커가 활성화된 '다음' 새로고침에야 반영돼서, 한 번만 새로고침한
 // 사람은 계속 옛날 화면을 봤다. 부스 준비 중에 문구 하나 고칠 때마다
 // 이걸 겪을 수는 없다.
-const CACHE_VERSION = 'uhd-quiz-v6';
+const CACHE_VERSION = 'uhd-quiz-v7';
 
 // 경기장 와이파이가 죽지는 않았는데 느리기만 한 경우가 제일 곤란하다.
 // 이 시간을 넘기면 더 기다리지 않고 캐시로 넘어간다.
@@ -26,9 +26,8 @@ const PRECACHE = [
   './img/emblem.png',
 ];
 
-// 음원은 따로 담는다. 아직 파일이 없어 PRECACHE에 넣으면 설치가 통째로
-// 실패하므로, 개별 실패를 무시하며 하나씩 받는다. 파일이 들어오면
-// CACHE_VERSION만 올려도 통째로 캐시된다.
+// 음원은 따로 담는다. 개별 실패를 무시하며 하나씩 받으므로, 파일 하나가
+// 빠져도 설치가 통째로 깨지지 않는다. 그 곡만 데모음으로 넘어간다.
 //
 // 재생될 때 담기게 두지 않는 이유가 있다. 브라우저는 오디오를 조각내서
 // (Range 요청) 받는 경우가 많은데, 그렇게 온 206 응답은 Cache API가
@@ -36,11 +35,11 @@ const PRECACHE = [
 //
 // 이 목록은 js/songs.js와 같아야 한다. test/sw.test.js가 검사한다.
 const AUDIO_PRECACHE = [
-  './audio/01-jalgaseyo.mp3',
-  './audio/02-uriga.mp3',
-  './audio/03-hongha.mp3',
-  './audio/04-byeori.mp3',
-  './audio/05-kkeutkkaji.mp3',
+  './audio/01-jalgaseyo.m4a',
+  './audio/02-uriga.m4a',
+  './audio/03-hongha.m4a',
+  './audio/04-byeori.m4a',
+  './audio/05-kkeutkkaji.m4a',
 ];
 
 self.addEventListener('install', (event) => {
