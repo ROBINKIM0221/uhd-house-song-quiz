@@ -64,6 +64,8 @@ const player = createPlayer();
 
 const state = {
   settings: loadSettings(),
+  // 'idle' | 'playing' | 'answering' | 'result'
+  phase: 'idle',
   deck: [],
   lastSongId: null,
   currentSong: null,
@@ -125,6 +127,7 @@ function renderChoices(songs) {
 function goIdle() {
   clearTimers();
   player.stop();
+  state.phase = 'idle';
   state.currentSong = null;
   state.answered = false;
   showScreen('idle');
@@ -134,6 +137,7 @@ function goIdle() {
 
 async function startQuestion() {
   clearTimers();
+  state.phase = 'playing';
   state.answered = false;
   state.currentSong = drawSong();
 
@@ -147,7 +151,7 @@ async function startQuestion() {
 
   // 참가자가 [시작하기]를 누른 제스처 안에서 재생을 건다.
   // iOS의 자동재생 차단을 여기서 통과한다.
-  const mode = await player.play(state.currentSong.file);
+  const mode = await player.play(state.currentSong.file, handleAudioEnded);
 
   // 재생을 기다리는 동안 참가자가 이미 답했거나 대기 화면으로
   // 돌아갔을 수 있다. 그러면 타이머를 새로 걸지 않는다.
@@ -159,8 +163,18 @@ async function startQuestion() {
   countdownPlay(state.settings.playSeconds);
 }
 
+/**
+ * 음원이 재생 길이보다 짧게 끝났다. 남은 시간 동안 무음을 흘리지 않고
+ * 곧바로 응답 단계로 넘긴다. 응원가가 모두 15~16초짜리라, 설정에서
+ * 재생 길이를 그보다 늘리면 뒤에 정적이 남는다.
+ */
+function handleAudioEnded() {
+  if (state.phase !== 'playing') return;
+  startAnswering();
+}
+
 function countdownPlay(remaining) {
-  if (state.answered) return;
+  if (state.phase !== 'playing') return;
   dom.playTimer.textContent = `재생 중 ${remaining}초`;
   if (remaining <= 0) {
     startAnswering();
@@ -174,13 +188,14 @@ function countdownPlay(remaining) {
 function startAnswering() {
   clearTimers();
   player.stop();
+  state.phase = 'answering';
   dom.playTimer.hidden = true;
   dom.answerTimer.hidden = false;
   countdownAnswer(state.settings.answerSeconds);
 }
 
 function countdownAnswer(remaining) {
-  if (state.answered) return;
+  if (state.phase !== 'answering') return;
   if (remaining <= 0) {
     finish(null); // 무응답 = 오답
     return;
@@ -194,6 +209,7 @@ function countdownAnswer(remaining) {
 function finish(selectedId) {
   if (state.answered || state.currentSong === null) return; // 연타 방지
   state.answered = true;
+  state.phase = 'result';
   clearTimers();
   player.stop();
 

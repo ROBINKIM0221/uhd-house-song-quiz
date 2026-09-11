@@ -67,12 +67,18 @@ export function createPlayer() {
   }
 
   return {
-    async play(file) {
+    /**
+     * onEnded는 음원 파일이 끝까지 재생됐을 때만 부른다. 데모음에는
+     * 붙이지 않는다. 데모음은 3초도 안 되는 전자음이라, 그걸로 곡이
+     * 끝났다고 치면 음원이 빠졌을 때 문제가 3초 만에 끝나버린다.
+     */
+    async play(file, onEnded) {
       this.stop();
       try {
         element.src = file;
         element.currentTime = 0;
         await element.play();
+        element.onended = () => onEnded?.();
         return 'file';
       } catch {
         // 파일이 없거나(404) 디코딩에 실패했거나 브라우저가 막았다.
@@ -82,6 +88,8 @@ export function createPlayer() {
     },
 
     stop() {
+      // 먼저 떼어낸다. 멈춘 뒤에 뒤늦게 불려서 다음 문제를 건드리면 안 된다.
+      element.onended = null;
       try {
         element.pause();
       } catch {
