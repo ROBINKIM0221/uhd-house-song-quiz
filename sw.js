@@ -7,7 +7,7 @@
 // 새 워커가 활성화된 '다음' 새로고침에야 반영돼서, 한 번만 새로고침한
 // 사람은 계속 옛날 화면을 봤다. 부스 준비 중에 문구 하나 고칠 때마다
 // 이걸 겪을 수는 없다.
-const CACHE_VERSION = 'uhd-quiz-v11';
+const CACHE_VERSION = 'uhd-quiz-v12';
 
 // 경기장 와이파이가 죽지는 않았는데 느리기만 한 경우가 제일 곤란하다.
 // 이 시간을 넘기면 더 기다리지 않고 캐시로 넘어간다.
@@ -46,8 +46,11 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     (async () => {
       const cache = await caches.open(CACHE_VERSION);
-      await cache.addAll(PRECACHE);
-      await Promise.all(AUDIO_PRECACHE.map((url) => cache.add(url).catch(() => {})));
+      // cache: 'reload' 가 없으면 사전 캐시마저 브라우저 HTTP 캐시에 묵어
+      // 있던 낡은 파일로 채워진다.
+      const fresh = (url) => new Request(url, { cache: 'reload' });
+      await cache.addAll(PRECACHE.map(fresh));
+      await Promise.all(AUDIO_PRECACHE.map((url) => cache.add(fresh(url)).catch(() => {})));
       await self.skipWaiting();
     })(),
   );
@@ -64,10 +67,26 @@ self.addEventListener('activate', (event) => {
   );
 });
 
+/**
+ * 브라우저 HTTP 캐시를 건너뛰고 진짜로 네트워크에 묻는다.
+ *
+ * GitHub Pages가 모든 파일에 Cache-Control: max-age=600 을 붙인다. 그냥
+ * fetch 하면 '네트워크 우선'이 아니라 '브라우저 HTTP 캐시 우선'이 되어 최대
+ * 10분 묵은 파일이 네트워크 응답인 척 돌아오고, 그 낡은 것을 Cache Storage에
+ * 덮어쓰기까지 했다. 배포한 수정이 화면에 안 잡히던 진짜 이유다.
+ *
+ * Request 객체 대신 URL을 넘기는 이유는, 내비게이션 요청으로 새 Request를
+ * 만들면 mode 때문에 예외가 날 수 있어서다. 같은 출처의 정적 파일만
+ * 다루므로 URL만으로 충분하다.
+ */
+function fetchFresh(request) {
+  return fetch(request.url, { cache: 'no-store', credentials: 'same-origin' });
+}
+
 function fetchWithTimeout(request) {
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => reject(new Error('network timeout')), NETWORK_TIMEOUT_MS);
-    fetch(request).then(
+    fetchFresh(request).then(
       (response) => {
         clearTimeout(timer);
         resolve(response);
