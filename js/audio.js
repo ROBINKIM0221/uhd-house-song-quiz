@@ -80,9 +80,11 @@ export function createPlayer() {
         await element.play();
         element.onended = () => onEnded?.();
         return 'file';
-      } catch {
+      } catch (error) {
         // 파일이 없거나(404) 디코딩에 실패했거나 브라우저가 막았다.
-        // 어느 쪽이든 데모음으로 넘어간다.
+        // 어느 쪽이든 데모음으로 넘어간다. 왜 실패했는지는 남긴다.
+        // 데모음이 나는데 이유를 모르면 현장에서 손쓸 방법이 없다.
+        console.warn(`[음원] 재생 실패: ${file}`, error);
         return playDemo(file) ? 'demo' : 'silent';
       }
     },
@@ -106,7 +108,9 @@ export function createPlayer() {
           // 네트워크만 보면 경기장에서 5곡 전부 '없음'이라고 거짓말한다.
           try {
             if ('caches' in window) {
-              const hit = await caches.match(file);
+              // ignoreVary: 저장할 때와 꺼낼 때의 Accept-Encoding 이 달라도
+              // URL만 보고 찾는다. sw.js 의 같은 주석 참고.
+              const hit = await caches.match(file, { ignoreVary: true });
               if (hit) return { file, ok: true };
             }
           } catch {

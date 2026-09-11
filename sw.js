@@ -7,7 +7,7 @@
 // 새 워커가 활성화된 '다음' 새로고침에야 반영돼서, 한 번만 새로고침한
 // 사람은 계속 옛날 화면을 봤다. 부스 준비 중에 문구 하나 고칠 때마다
 // 이걸 겪을 수는 없다.
-const CACHE_VERSION = 'uhd-quiz-v9';
+const CACHE_VERSION = 'uhd-quiz-v10';
 
 // 경기장 와이파이가 죽지는 않았는데 느리기만 한 경우가 제일 곤란하다.
 // 이 시간을 넘기면 더 기다리지 않고 캐시로 넘어간다.
@@ -92,12 +92,17 @@ async function networkFirst(request) {
     }
     return response;
   } catch {
-    const cached = await cache.match(request);
+    // ignoreVary 없이는 URL이 같아도 캐시에서 못 찾는다. GitHub Pages가
+    // Vary: Accept-Encoding 을 붙이는데, 오디오 요소가 보내는 요청의
+    // Accept-Encoding 은 설치할 때 쓴 일반 fetch 의 것과 달라서 매칭이
+    // 깨진다. 온라인에서는 네트워크가 받아주니 드러나지 않고, 오프라인
+    // 에서만 음원이 통째로 빠져 데모음이 났다.
+    const cached = await cache.match(request, { ignoreVary: true });
     if (cached) return cached;
 
     // 주소가 조금 달라도 캐시된 시작 페이지는 띄워준다.
     if (request.mode === 'navigate') {
-      const shell = await cache.match('./index.html');
+      const shell = await cache.match('./index.html', { ignoreVary: true });
       if (shell) return shell;
     }
 
