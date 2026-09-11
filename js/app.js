@@ -227,19 +227,32 @@ function finish(selectedId) {
 
 // --- 설정 오버레이 ----------------------------------------------------
 
+function addStatusRow(label, value, ok) {
+  const li = document.createElement('li');
+  const name = document.createElement('span');
+  name.textContent = label;
+  const mark = document.createElement('span');
+  mark.className = ok ? 'ok' : 'missing';
+  mark.textContent = value;
+  li.append(name, mark);
+  dom.audioStatus.append(li);
+}
+
 async function renderAudioStatus() {
   dom.audioStatus.replaceChildren();
-  const results = await player.probe(SONGS.map((s) => s.file));
+  // 실패했던 것을 여기서 다시 받아본다. 스태프가 이 화면을 여는 때가
+  // 곧 "음원이 들어왔는지 확인하고 싶은" 때다.
+  const results = await player.preload(SONGS.map((s) => s.file));
+
   for (const [index, entry] of results.entries()) {
-    const li = document.createElement('li');
-    const name = document.createElement('span');
-    name.textContent = SONGS[index].title;
-    const mark = document.createElement('span');
-    mark.className = entry.ok ? 'ok' : 'missing';
-    mark.textContent = entry.ok ? '정상' : '없음 (데모음)';
-    li.append(name, mark);
-    dom.audioStatus.append(li);
+    addStatusRow(SONGS[index].title, entry.ok ? '정상' : '없음 (데모음)', entry.ok);
   }
+
+  const failed = results.find((entry) => entry.error);
+  if (failed) addStatusRow('불러오기 오류', failed.error, false);
+
+  const playError = player.lastError();
+  if (playError) addStatusRow('마지막 재생 오류', playError, false);
 }
 
 function openSettings() {
@@ -333,6 +346,10 @@ dom.btnNext.addEventListener('click', goIdle);
 
 renderHint();
 goIdle();
+
+// 음원을 미리 받아둔다. 첫 참가자가 [시작하기]를 누르는 순간에는 이미
+// 메모리에 있어야 기다림 없이 재생되고, iOS 자동재생 차단도 통과한다.
+player.preload(SONGS.map((s) => s.file));
 
 // --- 오프라인 캐시 ----------------------------------------------------
 
